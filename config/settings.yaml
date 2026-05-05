@@ -1,0 +1,127 @@
+server:
+  mcp_port: 8000
+  wellness_api_port: 8001
+  learning_api_port: 8002
+
+domain_agents:
+  wellness_url: "http://localhost:9001"
+  learning_url: "http://localhost:9002"
+  planner_url: "http://localhost:9003"
+
+models:
+  primary: "llama3.2"
+  ollama_base_url: "http://localhost:11434"
+  temperature: 0.7
+  intent_temperature: 0.0
+
+logging:
+  show_json_payloads: true
+  agent_colors:
+    orchestrator: "bold white"
+    planner: "blue"
+    wellness: "green"
+    learning: "cyan"
+    execution: "yellow"
+    mcp: "magenta"
+    a2a-client: "bold yellow"
+
+tools:
+  - name: "get_wellness_activities"
+    category: "rest"
+    description: "Fetch wellness activities by type (relaxation, fitness, mindfulness)"
+    parameters:
+      type:
+        type: "string"
+        enum: ["relaxation", "fitness", "mindfulness"]
+    endpoint: "http://localhost:8001/activities"
+
+  - name: "get_meals"
+    category: "rest"
+    description: "Fetch meal suggestions by health goal"
+    parameters:
+      goal:
+        type: "string"
+        enum: ["healthy", "comfort", "quick"]
+    endpoint: "http://localhost:8001/meals"
+
+  - name: "get_sleep_tips"
+    category: "rest"
+    description: "Fetch sleep hygiene recommendations"
+    parameters: {}
+    endpoint: "http://localhost:8001/sleep-tips"
+
+  - name: "get_learning_topics"
+    category: "rest"
+    description: "Fetch learning topics by category"
+    parameters:
+      category:
+        type: "string"
+        enum: ["tech", "science", "arts", "history"]
+    endpoint: "http://localhost:8002/topics"
+
+  - name: "get_learning_resources"
+    category: "rest"
+    description: "Fetch resources for a given topic ID"
+    parameters:
+      topic_id:
+        type: "string"
+    endpoint: "http://localhost:8002/resources"
+
+  - name: "get_study_schedule"
+    category: "rest"
+    description: "Get a structured study schedule for a topic"
+    parameters:
+      topic:
+        type: "string"
+      available_hours:
+        type: "number"
+    endpoint: "http://localhost:8002/schedule"
+
+  - name: "get_current_date"
+    category: "local"
+    description: "Returns today's date, day of week, and the upcoming weekend dates"
+    parameters: {}
+    handler: "mcp_server.tools.local_tools.get_current_date"
+
+  - name: "calculate"
+    category: "local"
+    description: "Evaluate a mathematical expression safely"
+    parameters:
+      expression:
+        type: "string"
+    handler: "mcp_server.tools.local_tools.calculate"
+
+  - name: "build_time_blocks"
+    category: "local"
+    description: "Slot a list of activities into morning/afternoon/evening time blocks"
+    parameters:
+      activities:
+        type: "array"
+      duration_hours:
+        type: "number"
+    handler: "mcp_server.tools.local_tools.build_time_blocks"
+
+  - name: "parse_intent"
+    category: "ollama"
+    description: "Parse user intent and extract structured goals as JSON"
+    parameters:
+      user_input:
+        type: "string"
+    system_prompt: "You are an intent parser. Analyze the user's input and return ONLY a valid JSON object (no markdown, no explanation) with these boolean keys: relax, wellness, learning, social, creative. Set each to true if the intent is present."
+    temperature_override: 0.0
+
+  - name: "summarize_plan"
+    category: "ollama"
+    description: "Generate a friendly natural-language summary of a weekend plan"
+    parameters:
+      plan_data:
+        type: "string"
+    system_prompt: "You are a friendly wellness coach. Given this weekend plan data, write a warm, encouraging summary in 3-4 sentences. Focus on the benefits and what the person will enjoy."
+
+  - name: "generate_affirmation"
+    category: "ollama"
+    description: "Generate a short motivational affirmation for the wellness section"
+    parameters:
+      theme:
+        type: "string"
+    system_prompt: "Generate exactly one motivational sentence (maximum 20 words) for the given wellness theme. Return only the sentence, no quotes, no explanation."
