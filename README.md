@@ -1,5 +1,7 @@
 # Multi-Agent AI System: Weekend Planner
 
+![Architecture Overview](readme_cover.svg)
+
 A learning project demonstrating **Agentic AI** using two real protocols — **A2A** (Agent-to-Agent) for orchestration and **MCP** (Model Context Protocol) for tool execution — with local LLMs via Ollama.
 
 **One goal → Orchestrator → Domain Agents (A2A) → MCP Server → Tools → Structured weekend plan.**
